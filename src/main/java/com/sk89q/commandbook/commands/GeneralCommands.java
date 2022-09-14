@@ -35,7 +35,6 @@ import com.sk89q.commandbook.CommandBookPlugin;
 import com.sk89q.commandbook.CommandBookUtil;
 import com.sk89q.commandbook.events.MOTDSendEvent;
 import com.sk89q.commandbook.events.OnlineListSendEvent;
-import com.sk89q.jinglenote.MidiJingleSequencer;
 import com.sk89q.minecraft.util.commands.*;
 import static com.sk89q.commandbook.CommandBookUtil.*;
 
@@ -353,101 +352,6 @@ public class GeneralCommands {
         }
     }
     
-    @Command(aliases = {"intro"},
-            usage = "", desc = "Play the introduction song",
-            min = 0, max = 0)
-    @CommandPermissions({"commandbook.intro"})
-    public static void intro(CommandContext args, CommandBookPlugin plugin,
-            CommandSender sender) throws CommandException {
-
-        Player player = plugin.checkPlayer(sender);
-        
-        if (plugin.disableMidi) {
-            throw new CommandException("MIDI support is disabled.");
-        }
-
-        try {
-            MidiJingleSequencer sequencer = new MidiJingleSequencer(
-                    new File(plugin.getDataFolder(), "intro.mid"));
-            plugin.getJingleNoteManager().play(player, sequencer, 0);
-            sender.sendMessage(ChatColor.YELLOW + "Playing intro.midi...");
-        } catch (MidiUnavailableException e) {
-            throw new CommandException("Failed to access MIDI: "
-                    + e.getMessage());
-        } catch (InvalidMidiDataException e) {
-            throw new CommandException("Failed to read intro MIDI file: "
-                    + e.getMessage());
-        } catch (FileNotFoundException e) {
-            throw new CommandException("No intro.mid is available.");
-        } catch (IOException e) {
-            throw new CommandException("Failed to read intro MIDI file: "
-                    + e.getMessage());
-        }
-    }
-    
-    @Command(aliases = {"midi"},
-            usage = "[midi]", desc = "Play a MIDI file",
-            min = 0, max = 1)
-    public static void midi(CommandContext args, CommandBookPlugin plugin,
-            CommandSender sender) throws CommandException {
-
-        Player player = plugin.checkPlayer(sender);
-        
-        if (args.argsLength() == 0) {
-            plugin.getJingleNoteManager().stop(player);
-            sender.sendMessage(ChatColor.YELLOW + "All music stopped.");
-            return;
-        }
-        
-        plugin.checkPermission(sender, "commandbook.midi");
-        
-        String filename = args.getString(0);
-        
-        if (!filename.matches("^[A-Za-z0-9 \\-_\\.~\\[\\]\\(\\$),]+$")) {
-            throw new CommandException("Invalid filename specified!");
-        }
-        
-        File[] trialPaths = {
-                new File(plugin.getDataFolder(), "midi/" + filename),
-                new File(plugin.getDataFolder(), "midi/" + filename + ".mid"),
-                new File(plugin.getDataFolder(), "midi/" + filename + ".midi"),
-                new File("midi", filename),
-                new File("midi", filename + ".mid"),
-                new File("midi", filename + ".midi"),
-                };
-        
-        File file = null;
-        
-        for (File f : trialPaths) {
-            if (f.exists()) {
-                file = f;
-                break;
-            }
-        }
-        
-        if (file == null) {
-            throw new CommandException("The specified MIDI file was not found.");
-        }
-        
-        try {
-            MidiJingleSequencer sequencer = new MidiJingleSequencer(file);
-            plugin.getJingleNoteManager().play(player, sequencer, 0);
-            sender.sendMessage(ChatColor.YELLOW + "Playing " + file.getName()
-                    + "... Use '/midi' to stop.");
-        } catch (MidiUnavailableException e) {
-            throw new CommandException("Failed to access MIDI: "
-                    + e.getMessage());
-        } catch (InvalidMidiDataException e) {
-            throw new CommandException("Failed to read intro MIDI file: "
-                    + e.getMessage());
-        } catch (FileNotFoundException e) {
-            throw new CommandException("The specified MIDI file was not found.");
-        } catch (IOException e) {
-            throw new CommandException("Failed to read intro MIDI file: "
-                    + e.getMessage());
-        }
-    }
-    
     @Command(aliases = {"rules"},
             usage = "", desc = "Show the rules",
             min = 0, max = 0)
@@ -521,27 +425,6 @@ public class GeneralCommands {
         sender.sendMessage(ChatColor.YELLOW +
                 String.format("Your direction: %s",
                         getCardinalDirection(player)));
-    }
-
-    @Command(aliases = {"biome"},
-            usage = "[player]", desc = "Get your current biome",
-            flags = "", min = 0, max = 1)
-    @CommandPermissions({"commandbook.biome"})
-    public static void biome(CommandContext args, CommandBookPlugin plugin,
-            CommandSender sender) throws CommandException {
-        
-        Player player;
-
-        if (args.argsLength() == 0) {
-            player = plugin.checkPlayer(sender);
-        } else {
-            plugin.checkPermission(sender, "commandbook.biome.other");
-            
-            player = plugin.matchSinglePlayer(sender, args.getString(0));
-        }
-
-        sender.sendMessage(ChatColor.YELLOW + player.getLocation().getBlock().getBiome().name().toLowerCase().replace("_"," ")+" biome.");
-
     }
 
     @Command(aliases = {"whois"},
@@ -693,122 +576,6 @@ public class GeneralCommands {
     @NestedCommand({DebuggingCommands.class})
     public static void debug(CommandContext args, CommandBookPlugin plugin,
             CommandSender sender) throws CommandException {
-    }
-    
-    @Command(aliases = {"weather"},
-            usage = "<'stormy'|'sunny'> [duration] [world]", desc = "Change the world weather",
-            min = 1, max = 3)
-    @CommandPermissions({"commandbook.weather"})
-    public static void weather(CommandContext args, CommandBookPlugin plugin,
-            CommandSender sender) throws CommandException {
-        
-        World world;
-        String weatherStr = args.getString(0);
-        int duration = -1;
-
-        if (args.argsLength() == 1) {
-            world = plugin.checkPlayer(sender).getWorld();
-        } else if (args.argsLength() == 2) {
-            world = plugin.checkPlayer(sender).getWorld();
-            duration = args.getInteger(1);
-        } else { // A world was specified!
-            world = plugin.matchWorld(sender, args.getString(2));
-            duration = args.getInteger(1);
-        }
-        
-        if (weatherStr.equalsIgnoreCase("stormy")
-                || weatherStr.equalsIgnoreCase("rainy")
-                || weatherStr.equalsIgnoreCase("snowy")
-                || weatherStr.equalsIgnoreCase("rain")
-                || weatherStr.equalsIgnoreCase("snow")
-                || weatherStr.equalsIgnoreCase("on")) {
-            
-            world.setStorm(true);
-            
-            if (duration > 0) {
-                world.setWeatherDuration(duration * 20);
-            }
-
-            if (plugin.broadcastChanges) { 
-                plugin.getServer().broadcastMessage(ChatColor.YELLOW
-                        + plugin.toName(sender) + " has started on a storm on '"
-                        + world.getName() + "'.");
-            }
-            
-            // Tell console, since console won't get the broadcast message.
-            if (!plugin.broadcastChanges) {
-                sender.sendMessage(ChatColor.YELLOW + "Stormy weather enabled.");
-            }
-            
-        } else if (weatherStr.equalsIgnoreCase("clear")
-                || weatherStr.equalsIgnoreCase("sunny")
-                || weatherStr.equalsIgnoreCase("snowy")
-                || weatherStr.equalsIgnoreCase("rain")
-                || weatherStr.equalsIgnoreCase("snow")
-                || weatherStr.equalsIgnoreCase("off")) {
-            
-            world.setStorm(false);
-            
-            if (duration > 0) {
-                world.setWeatherDuration(duration * 20);
-            }
-
-            if (plugin.broadcastChanges) { 
-                plugin.getServer().broadcastMessage(ChatColor.YELLOW
-                        + plugin.toName(sender) + " has stopped a storm on '"
-                        + world.getName() + "'.");
-            }
-            
-            // Tell console, since console won't get the broadcast message.
-            if (!plugin.broadcastChanges) {
-                sender.sendMessage(ChatColor.YELLOW + "Stormy weather disabled.");
-            }
-            
-        } else {
-            throw new CommandException("Unknown weather state! Acceptable states: sunny or stormy");
-        }
-    }
-    
-    @Command(aliases = {"thunder"},
-            usage = "<'on'|'off'> [duration] [world]", desc = "Change the thunder state",
-            min = 1, max = 3)
-    @CommandPermissions({"commandbook.weather.thunder"})
-    public static void thunder(CommandContext args, CommandBookPlugin plugin,
-            CommandSender sender) throws CommandException {
-        
-        World world;
-        String weatherStr = args.getString(0);
-        int duration = -1;
-
-        if (args.argsLength() == 1) {
-            world = plugin.checkPlayer(sender).getWorld();
-        } else if (args.argsLength() == 2) {
-            world = plugin.checkPlayer(sender).getWorld();
-            duration = args.getInteger(1);
-        } else { // A world was specified!
-            world = plugin.matchWorld(sender, args.getString(2));
-            duration = args.getInteger(1);
-        }
-        
-        if (weatherStr.equalsIgnoreCase("on")) {
-            world.setThundering(true);
-            
-            if (duration > 0) {
-                world.setThunderDuration(duration * 20);
-            }
-            
-            sender.sendMessage(ChatColor.YELLOW + "Thunder enabled.");
-        } else if (weatherStr.equalsIgnoreCase("off")) {
-            world.setThundering(false);
-            
-            if (duration > 0) {
-                world.setThunderDuration(duration * 20);
-            }
-
-            sender.sendMessage(ChatColor.YELLOW + "Thunder disabled.");
-        } else {
-            throw new CommandException("Unknown thunder state! Acceptable states: on or off");
-        }
     }
     
     @Command(aliases = {"more"},

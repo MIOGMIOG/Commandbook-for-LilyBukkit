@@ -28,7 +28,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import org.bukkit.ChatColor;
-import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -57,7 +56,6 @@ import com.sk89q.commandbook.locations.LocationManager;
 import com.sk89q.commandbook.locations.LocationManagerFactory;
 import com.sk89q.commandbook.locations.RootLocationManager;
 import com.sk89q.commandbook.locations.NamedLocation;
-import com.sk89q.jinglenote.JingleNoteManager;
 import com.sk89q.minecraft.util.commands.*;
 import com.sk89q.worldedit.blocks.BlockID;
 import com.sk89q.worldedit.blocks.BlockType;
@@ -119,11 +117,6 @@ public class CommandBookPlugin extends JavaPlugin {
      * Time lock manager.
      */
     protected TimeLockManager timeLockManager;
-    
-    /**
-     * Jingle note manager.
-     */
-    protected JingleNoteManager jingleNoteManager;
 
     /**
      * Spawn pitch and yaw storage
@@ -190,9 +183,7 @@ public class CommandBookPlugin extends JavaPlugin {
         // Setup kits
         kits = new FlatFileKitsManager(new File(getDataFolder(), "kits.txt"), this);
         kits.load();
-        
-        // Jingle note manager
-        jingleNoteManager = new JingleNoteManager(this);
+
         
         // Prepare permissions
         perms = new PermissionsResolverManager(this, getDescription().getName(), logger);
@@ -246,12 +237,15 @@ public class CommandBookPlugin extends JavaPlugin {
         registerEvent(Event.Type.WORLD_LOAD, worldListener);
     }
 
+    public InputStream getResource(String s) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
     /**
      * Called when the plugin is disabled. Shutdown and clearing of any
      * temporary data occurs here.
      */
     public void onDisable() {
-        jingleNoteManager.stopAll();
         bans.unload();
         this.getServer().getScheduler().cancelTasks(this);
     }
@@ -1349,12 +1343,10 @@ public class CommandBookPlugin extends JavaPlugin {
                 if (dataType != null) {
                     if (dataType == BlockType.STONE) {
                         return 0;
-                    } else if (dataType == BlockType.SANDSTONE) {
-                        return 1;
                     } else if (dataType == BlockType.WOOD) {
-                        return 2;
+                        return 1;
                     } else if (dataType == BlockType.COBBLESTONE) {
-                        return 3;
+                        return 2;
                     } else {
                         throw new CommandException("Invalid slab material of '" + filter + "'.");
                     }
@@ -1379,30 +1371,10 @@ public class CommandBookPlugin extends JavaPlugin {
                 throw new CommandException("Invalid data value of '" + filter + "'.");
         }
     }
-    
-    /**
-     * Attempt to match a dye color for sheep wool.
-     *
-     * @param filter
-     * @return
-     * @throws CommandException
-     */
-    public DyeColor matchDyeColor(String filter) throws CommandException {
-        if (filter.equalsIgnoreCase("random")) {
-            return DyeColor.getByData((byte) new Random().nextInt(15));
-        }
-        try {
-            DyeColor match = DyeColor.valueOf(filter.toUpperCase());
-            if (match != null) {
-                return match;
-            }
-        } catch (IllegalArgumentException e) {}
-        throw new CommandException("Unknown dye color name of '" + filter + "'.");
-    }
+
     /**
      * Get preprogrammed messages.
-     * 
-     * @param id 
+     *
      * @return may return null
      */
     public String getMessage(String id) {
@@ -1470,15 +1442,6 @@ public class CommandBookPlugin extends JavaPlugin {
      */
     public Map<String, Integer> getLockedTimes() {
         return lockedTimes;
-    }
-    
-    /**
-     * Get the jingle note manager.
-     * 
-     * @return
-     */
-    public JingleNoteManager getJingleNoteManager() {
-        return jingleNoteManager;
     }
     
     /**

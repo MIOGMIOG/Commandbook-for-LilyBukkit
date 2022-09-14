@@ -84,7 +84,7 @@ public class UserSession implements PersistentSession {
     }
     
     public boolean hasThor() {
-        return hasThor;
+        return false;
     }
     
     public void setHasThor(boolean hasThor) {

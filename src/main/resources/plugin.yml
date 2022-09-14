@@ -51,15 +51,6 @@ commands:
         usage: /<command> [-a] [-i] [target]
         _category: items
 
-    midi:
-        aliases: play
-        description: Play a MIDI file
-        usage: /<command> [midi]
-    intro:
-        description: Replay the intro music
-        usage: /<command>
-        _parent: midi
-
     time:
         description: Set the time of your current world
         usage: /<command> [world] <time|"current">
@@ -68,14 +59,6 @@ commands:
         usage: /<command> [-rsw] [filter] <time|"current">
         _parent: time
 
-    weather:
-        description: Change the weather
-        usage: /<command> <'stormy'|'sunny'> [duration] [world]
-        _category: world
-    thunder:
-        description: Set the thunder state
-        usage: /<command> <'on'|'off'> [duration] [world]
-        _parent: weather
     setspawn:
         description: Set the spawn location
         usage: /<command> [location]
@@ -93,10 +76,6 @@ commands:
         description: Tell information about a user
         usage: /<command> [target]
         _category: player
-    biome:
-        description: Get a players current biome
-        usage: /<command> [target]
-        _category: player
     compass:
         description: Get your compass direction
         usage: /<command> [target]
@@ -104,15 +83,6 @@ commands:
     clear:
         description: Clear your inventory
         usage: /<command> [-a] [target]
-        _category: player
-    thor:
-        description: Give Thor's hammer
-        usage: /<command> [target]
-        _category: player
-    unthor:
-        description: Revoke Thor's hammer
-        usage: /<command> [target]
-        _parent: thor
         _category: player
     rocket:
         description: Rocket a player
@@ -122,16 +92,8 @@ commands:
         description: Slap a player
         usage: /<command> [-s] [-h|-v] [-d] [target]
         _category: player
-    shock:
-        description: Shock a player
-        usage: /<command> [-s] [-k] [-a] [target]
-        _category: player
     barrage:
         description: Send a barrage of arrows
-        usage: /<command> [-s] [target]
-        _category: player
-    firebarrage:
-        description: Sends a barrage of fireballs
         usage: /<command> [-s] [target]
         _category: player
 
@@ -143,7 +105,6 @@ commands:
     call:
         description: Request a teleport from someone
         usage: /<command> <target>
-        _category: player
         _category: teleport
     bring:
         aliases: [tphere, summon, s]

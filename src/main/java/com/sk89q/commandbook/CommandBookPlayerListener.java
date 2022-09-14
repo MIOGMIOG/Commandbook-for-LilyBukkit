@@ -45,7 +45,6 @@ import org.bukkit.event.player.PlayerLoginEvent.Result;
 import org.bukkit.event.player.PlayerQuitEvent;
 import com.sk89q.commandbook.events.MOTDSendEvent;
 import com.sk89q.commandbook.events.OnlineListSendEvent;
-import com.sk89q.jinglenote.MidiJingleSequencer;
 import org.bukkit.event.player.PlayerTeleportEvent;
 
 /**
@@ -139,24 +138,6 @@ public class CommandBookPlayerListener extends PlayerListener {
                     plugin.getServer().getOnlinePlayers(), player, plugin);
         }
 
-        if (!plugin.disableMidi) {
-            try {
-                MidiJingleSequencer sequencer = new MidiJingleSequencer(
-                        new File(plugin.getDataFolder(), "intro.mid"));
-                plugin.getJingleNoteManager().play(player, sequencer, 2000);
-            } catch (MidiUnavailableException e) {
-                logger.log(Level.WARNING, "CommandBook: Failed to access MIDI: "
-                        + e.getMessage());
-            } catch (InvalidMidiDataException e) {
-                logger.log(Level.WARNING, "CommandBook: Failed to read intro MIDI file: "
-                        + e.getMessage());
-            } catch (FileNotFoundException e) {
-            } catch (IOException e) {
-                logger.log(Level.WARNING, "CommandBook: Failed to read intro MIDI file: "
-                        + e.getMessage());
-            }
-        }
-
         World defaultWorld = plugin.getServer().getWorlds().get(0);
         if (!new File(defaultWorld.getName() + File.separatorChar + "players" +
                 File.separatorChar + player.getName() + ".dat").exists() && plugin.exactSpawn)
@@ -176,37 +157,12 @@ public class CommandBookPlayerListener extends PlayerListener {
     }
 
     /**
-     * Called when a player interacts.
-     */
-    @Override
-    public void onPlayerInteract(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        
-        if (plugin.getSession(player).hasThor()) {
-            if (!plugin.thorItems.contains(player.getItemInHand().getTypeId())) {
-                return;
-            }
-            
-            if (event.getAction() == Action.LEFT_CLICK_AIR) {
-                Block block = player.getTargetBlock(null, 300);
-                if (block != null) {
-                    player.getWorld().strikeLightning(block.getLocation());
-                }
-            } else if (event.getAction() == Action.LEFT_CLICK_BLOCK) {
-                Block block = event.getClickedBlock();
-                player.getWorld().strikeLightning(block.getLocation());
-            }
-        }
-    }
-
-    /**
      * Called on player disconnect.
      */
     @Override
     public void onPlayerQuit(PlayerQuitEvent event) {
         plugin.getSession(event.getPlayer()).handleDisconnect();
         plugin.getAdminSession(event.getPlayer()).handleDisconnect();
-        plugin.getJingleNoteManager().stop(event.getPlayer());
     }
 
     @Override

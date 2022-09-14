@@ -29,7 +29,6 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.CreatureType;
-import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
@@ -396,7 +395,6 @@ public class CommandBookUtil {
      * @param player
      * @param dir
      * @param speed
-     * @param spread
      */
     public static void sendArrowFromPlayer(Player player,
             Vector dir, float speed) {
@@ -408,24 +406,6 @@ public class CommandBookUtil {
         loc.setZ(finalVecLoc.getZ());
         Arrow arrow = player.getWorld().spawn(loc, Arrow.class);
         arrow.setVelocity(dir.multiply(speed));
-    }
-
-    /**
-     * Send fireballs from a player eye level.
-     * 
-     * @param player
-     * @param amt number of fireballs to shoot (evenly spaced)
-     */
-    public static void sendFireballsFromPlayer(Player player, int amt) {
-        Location loc = player.getEyeLocation();
-        final double tau = 2 * Math.PI;
-        double arc = tau / amt;
-        for (double a = 0; a < tau; a += arc) {
-            Vector dir = new Vector(Math.cos(a), 0, Math.sin(a));
-            Location spawn = loc.toVector().add(dir.multiply(2)).toLocation(loc.getWorld(), 0.0F, 0.0F);
-            Fireball fball = player.getWorld().spawn(spawn, Fireball.class);
-            fball.setDirection(dir.multiply(10));
-        }
     }
 
     /**
