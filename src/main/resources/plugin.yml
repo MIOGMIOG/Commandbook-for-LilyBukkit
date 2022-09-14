@@ -105,6 +105,7 @@ commands:
     call:
         description: Request a teleport from someone
         usage: /<command> <target>
+        _category: player
         _category: teleport
     bring:
         aliases: [tphere, summon, s]
